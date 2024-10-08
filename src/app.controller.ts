@@ -1,12 +1,16 @@
-import { Controller, Get } from '@nestjs/common';
-import { AppService } from './app.service';
+import { Controller, Post, Body, ValidationPipe } from '@nestjs/common';
+import { CalcService } from './calc.service';
+import { EvaluateDto } from './evaluate.dto';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(private readonly calcService: CalcService) {}
 
-  @Get()
-  getHello(): string {
-    return this.appService.getHello();
+  @Post('/evaluate')
+  getEvaluateResult(
+    @Body(new ValidationPipe({ whitelist: true, transform: true }))
+    payload: EvaluateDto,
+  ): Promise<string> {
+    return this.calcService.evaluateAsync(payload);
   }
 }
