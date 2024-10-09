@@ -1,14 +1,6 @@
 import { parentPort, workerData } from 'node:worker_threads';
 
-// for older node:
-// import mathjs from 'mathjs';
-// for modern:
-const mathjs_import = import('mathjs');
+import { calculate } from './calc.lib';
 
-const expression = workerData;
-console.log('33 ', expression);
-(async () => {
-  const { evaluate } = await mathjs_import;
-  const result = evaluate(expression);
-  parentPort.postMessage({ result });
-})();
+const result = calculate(workerData);
+parentPort.postMessage({ result });
