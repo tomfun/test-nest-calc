@@ -6,17 +6,24 @@ interface Token {
 
 function tokenize(expression: string): Token[] {
   const tokens: Token[] = [];
-  const tokenRegex = /\s*([0-9]+(?:\.[0-9]+)?|[\+\-\*\/\(\)])\s*/g;
+  const tokenRegex = /\s*([0-9]+(?:\.[0-9]+)?|[+\-*\/()÷×−^])\s*/g;
+
   let match;
 
   while ((match = tokenRegex.exec(expression)) !== null) {
-    const [_, value] = match;
+    let [_, value] = match;
     let type: TokenType;
 
     if (!isNaN(Number(value))) {
       type = 'Number';
-    } else if ('+-*/'.includes(value)) {
+    } else if ('+-*/÷×−^'.includes(value)) {
       type = 'Operator';
+      value =
+        {
+          '÷': '/',
+          '×': '*',
+          '−': '-',
+        }[value] || value;
     } else if (value === '(') {
       type = 'LeftParen';
     } else if (value === ')') {
@@ -39,8 +46,10 @@ function shuntingYard(tokens: Token[]): Token[] {
     '-': 2,
     '*': 3,
     '/': 3,
+    '^': 4,
   };
   const associativity: { [key: string]: 'Left' | 'Right' } = {
+    '^': 'Right',
     '+': 'Left',
     '-': 'Left',
     '*': 'Left',
@@ -123,6 +132,9 @@ function evaluateRPN(tokens: Token[]): number {
             throw new Error('Division by zero');
           }
           result = left / right;
+          break;
+        case '^':
+          result = left ** right;
           break;
         default:
           throw new Error(`Unknown operator: ${token.value}`);
